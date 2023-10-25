@@ -1,0 +1,28 @@
+version: '3'
+
+tasks:
+  default:
+    desc: List all tasks
+    cmds:
+      - task --list-all
+  
+  cache:
+    desc: Cache dependencies
+    silent: true
+    cmds:
+      - go fmt ./...
+      - go mod tidy
+
+  stop:
+    desc: Stop service
+    cmds:
+      - docker-compose down --volumes
+
+  start:
+    desc: Start service
+    deps:
+      - stop
+      - cache
+    silent: true
+    cmds:
+      - docker-compose up --build --force-recreate
