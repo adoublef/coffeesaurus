@@ -1,0 +1,25 @@
+version: '3.9'
+services:
+  nginx:
+    container_name: coffeesaurus-nginx
+    build:
+      context: ./nginx
+    ports:
+      - 8080:80
+    networks:
+      - coffeesaurus-network
+  
+  primary:
+    container_name: coffeesaurus-primary
+    build:
+      context: .
+      target: deploy
+    privileged: true
+    ports:
+      - 8081:8081
+    networks:
+      - coffeesaurus-network
+
+networks:
+  coffeesaurus-network:
+
