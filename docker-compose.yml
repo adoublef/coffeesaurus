@@ -17,6 +17,8 @@ services:
       args:
         - LITEFS_CONFIG=litefs.nginx.yml
     privileged: true
+    volumes:
+      - ./data:/data
     environment:
       - FLY_REGION=primary
     ports:

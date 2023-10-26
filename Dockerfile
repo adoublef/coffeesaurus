@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-ARG GO_VERSION=1.21-alpine
+ARG GO_VERSION=1.21
 
 FROM golang:${GO_VERSION} AS base
 
@@ -17,14 +17,21 @@ RUN go test -v -cover -count 1 ./...
 
 FROM base AS build
 
-ARG SOURCE=./cmd/coffeesaurus/
-
+# build application
 # cgo needed for litefs
 RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build \
     -ldflags "-s -w -extldflags '-static'" \
     -buildvcs=false \
     -tags osusergo,netgo \
-    -o /usr/bin/a ${SOURCE}
+    -o /usr/bin/a ./cmd/coffeesaurus/
+
+# build migration
+# cgo needed for litefs
+RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build \
+    -ldflags "-s -w -extldflags '-static'" \
+    -buildvcs=false \
+    -tags osusergo,netgo \
+    -o /usr/bin/b ./cmd/migrations/
 
 FROM alpine AS deploy
 
@@ -32,11 +39,12 @@ WORKDIR /opt
 
 ARG LITEFS_CONFIG="litefs.yml"
 ENV LITEFS_DIR="/litefs"
+ENV DATABASE_URL="file:${LITEFS_DIR}/iam.db"
 ENV INTERNAL_PORT=8080
 ENV PORT=8081
 
 # copy binary from build
-COPY --from=build /usr/bin/a .
+COPY --from=build /usr/bin/a /usr/bin/b ./
 
 # install sqlite, ca-certificates, curl and fuse for litefs
 RUN apk add --no-cache bash fuse3 sqlite ca-certificates curl
