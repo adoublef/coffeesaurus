@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"embed"
 	"fmt"
 	"log"
 	"net"
@@ -11,15 +10,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/adoublef-go/template"
+	iamHTTP "github.com/adoublef/coffeesaurus/internal/iam/http"
 	"github.com/go-chi/chi/v5"
 )
-
-//go:embed all:*.html
-var fsys embed.FS
-
-// change API to allow any pattern
-var t = template.Must(fsys, template.Partials(false))
 
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
@@ -42,14 +35,11 @@ func run(ctx context.Context) (err error) {
 
 	mux := chi.NewMux()
 	{
-		// simple index page
-		mux.Get("/", func(w http.ResponseWriter, r *http.Request) {
-			// NOTE static fonts and styles handled by external project
-			t.ExecuteHTTP(w, r, "index", nil)
-		})
+		mux.Mount("/", iamHTTP.NewService())
 	}
 
 	s := &http.Server{
+		// TODO make Getenv a required helper
 		Addr:    ":" + os.Getenv("PORT"),
 		Handler: mux,
 		BaseContext: func(l net.Listener) context.Context {
