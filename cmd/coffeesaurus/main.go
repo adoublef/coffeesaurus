@@ -34,7 +34,7 @@ func run(ctx context.Context) (err error) {
 	mux := chi.NewMux()
 	{
 		mux.Get("/", func(w http.ResponseWriter, r *http.Request) {
-			w.Write([]byte("ok"))
+			w.Write([]byte("🦖"))
 		})
 	}
 
