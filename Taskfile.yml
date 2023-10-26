@@ -8,7 +8,6 @@ tasks:
   
   cache:
     desc: Cache dependencies
-    silent: true
     cmds:
       - go fmt ./...
       - go mod tidy
@@ -23,6 +22,10 @@ tasks:
     deps:
       - stop
       - cache
-    silent: true
     cmds:
       - docker-compose up --build --force-recreate
+
+  env:
+    desc: Secret management with Infisical
+    cmds:
+      - infisical secrets --path=/coffeesaurus {{.CLI_ARGS}}
