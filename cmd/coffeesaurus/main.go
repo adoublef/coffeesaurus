@@ -39,8 +39,7 @@ func run(ctx context.Context) (err error) {
 	}
 
 	s := &http.Server{
-		// NOTE why can't i get this working dynamically
-		Addr:    ":8081",
+		Addr:    ":"+os.Getenv("PORT"),
 		Handler: mux,
 		BaseContext: func(l net.Listener) context.Context {
 			return ctx
