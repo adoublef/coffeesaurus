@@ -18,6 +18,7 @@ var _ http.Handler = (*Service)(nil)
 
 type Service struct {
 	m *chi.Mux
+	// a *oauth2.Authenticator
 }
 
 // ServeHTTP implements http.Handler.
@@ -35,9 +36,8 @@ func NewService() *Service {
 }
 
 func (s *Service) routes() {
-	// simple index page
-	s.m.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		// NOTE static fonts and styles handled by external project
-		t.ExecuteHTTP(w, r, "index", nil)
-	})
+	// if logged in redirect to `projects` else show home
+	s.m.Get("/", s.handleIndex())
+	s.m.Get("/signin/{provider}", s.handleSignIn())
+	s.m.Get("/callback/{provider}", s.handleCallback())
 }
