@@ -54,4 +54,15 @@ COPY --from=flyio/litefs:0.5 /usr/local/bin/litefs /usr/local/bin/litefs
 ADD litefs/${LITEFS_CONFIG} /etc/litefs.yml
 RUN mkdir -p /data ${LITEFS_DIR}
 
+FROM deploy AS staging
+
+# prepare for infisical
+RUN curl -1sLf \
+    'https://dl.cloudsmith.io/public/infisical/infisical-cli/setup.alpine.sh' | bash \
+    && apk add infisical
+
+ENTRYPOINT ["litefs", "mount"]
+
+FROM deploy AS final
+
 ENTRYPOINT ["litefs", "mount"]
