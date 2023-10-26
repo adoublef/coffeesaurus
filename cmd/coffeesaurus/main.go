@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"log"
 	"net"
@@ -11,7 +12,9 @@ import (
 	"syscall"
 
 	iamHTTP "github.com/adoublef/coffeesaurus/internal/iam/http"
+	"github.com/adoublef/coffeesaurus/internal/iam/sqlite3"
 	"github.com/go-chi/chi/v5"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 func main() {
@@ -32,6 +35,16 @@ func main() {
 }
 
 func run(ctx context.Context) (err error) {
+	// ping database
+	db, err := sql.Open("sqlite3", os.Getenv("DATABASE_URL"))
+	if err != nil {
+		return fmt.Errorf("opening connection: %w", err)
+	}
+	defer db.Close()
+	err = sqlite3.Ping(ctx, db, "profiles")
+	if err != nil {
+		return err
+	}
 
 	mux := chi.NewMux()
 	{
