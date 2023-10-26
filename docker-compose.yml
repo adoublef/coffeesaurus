@@ -14,7 +14,11 @@ services:
     build:
       context: .
       target: deploy
+      args:
+        - LITEFS_CONFIG=litefs.nginx.yml
     privileged: true
+    environment:
+      - FLY_REGION=primary
     ports:
       - 8081:8081
     networks:
