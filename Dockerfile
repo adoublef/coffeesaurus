@@ -17,22 +17,33 @@ RUN go test -v -cover -count 1 ./...
 
 FROM base AS build
 
-ARG SOURCE_CODE=./cmd/coffeesaurus/
+ARG SOURCE=./cmd/coffeesaurus/
 
 # cgo needed for litefs
 RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build \
     -ldflags "-s -w -extldflags '-static'" \
     -buildvcs=false \
     -tags osusergo,netgo \
-    -o /usr/bin/a ${SOURCE_CODE}
+    -o /usr/bin/a ${SOURCE}
 
 FROM alpine AS deploy
 
 WORKDIR /opt
 
+ARG LITEFS_CONFIG="litefs.yml"
+ENV LITEFS_DIR="/litefs"
+ENV INTERNAL_PORT=8080
 ENV PORT=8081
 
 # copy binary from build
 COPY --from=build /usr/bin/a .
 
-ENTRYPOINT [ "./a" ]
+# install sqlite, ca-certificates, curl and fuse for litefs
+RUN apk add --no-cache bash fuse3 sqlite ca-certificates curl
+
+# prepar for litefs
+COPY --from=flyio/litefs:0.5 /usr/local/bin/litefs /usr/local/bin/litefs
+ADD litefs/${LITEFS_CONFIG} /etc/litefs.yml
+RUN mkdir -p /data ${LITEFS_DIR}
+
+ENTRYPOINT ["litefs", "mount"]
