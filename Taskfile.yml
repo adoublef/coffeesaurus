@@ -21,7 +21,7 @@ tasks:
     desc: Start service
     deps:
       - stop
-      # - cache
+      - cache
     cmds:
       - docker-compose up --build --force-recreate
 
