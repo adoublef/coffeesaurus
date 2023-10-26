@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"embed"
 	"fmt"
 	"log"
 	"net"
@@ -10,8 +11,15 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/adoublef-go/template"
 	"github.com/go-chi/chi/v5"
 )
+
+//go:embed all:*.html
+var fsys embed.FS
+
+// change API to allow any pattern
+var t = template.Must(fsys, template.Partials(false))
 
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
@@ -31,15 +39,18 @@ func main() {
 }
 
 func run(ctx context.Context) (err error) {
+
 	mux := chi.NewMux()
 	{
+		// simple index page
 		mux.Get("/", func(w http.ResponseWriter, r *http.Request) {
-			w.Write([]byte("🦖"))
+			// NOTE static fonts and styles handled by external project
+			t.ExecuteHTTP(w, r, "index", nil)
 		})
 	}
 
 	s := &http.Server{
-		Addr:    ":"+os.Getenv("PORT"),
+		Addr:    ":" + os.Getenv("PORT"),
 		Handler: mux,
 		BaseContext: func(l net.Listener) context.Context {
 			return ctx
