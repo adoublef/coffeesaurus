@@ -11,6 +11,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/adoublef/coffeesaurus/env"
 	iamHTTP "github.com/adoublef/coffeesaurus/internal/iam/http"
 	"github.com/adoublef/coffeesaurus/internal/iam/sqlite3"
 	"github.com/go-chi/chi/v5"
@@ -52,8 +53,7 @@ func run(ctx context.Context) (err error) {
 	}
 
 	s := &http.Server{
-		// TODO make Getenv a required helper
-		Addr:    ":" + os.Getenv("PORT"),
+		Addr:    ":" + env.WithValue("PORT", "8080"),
 		Handler: mux,
 		BaseContext: func(l net.Listener) context.Context {
 			return ctx
