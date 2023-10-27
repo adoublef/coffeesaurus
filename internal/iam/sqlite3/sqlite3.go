@@ -15,6 +15,7 @@ var (
 	migrations embed.FS
 )
 
+// Up will run through the migration files
 func Up(ctx context.Context, dsn string) (err error) {
 	db, err := sql.Open("sqlite3", dsn)
 	if err != nil {
@@ -35,6 +36,7 @@ func Up(ctx context.Context, dsn string) (err error) {
 	return nil
 }
 
+// Ping returns an error if a table does not exist
 func Ping(ctx context.Context, db *sql.DB, tableName string) (err error) {
 	var n int
 	err = db.QueryRowContext(ctx, "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name=?", tableName).Scan(&n)
