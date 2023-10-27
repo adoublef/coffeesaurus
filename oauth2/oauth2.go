@@ -3,6 +3,7 @@ package oauth2
 import (
 	"context"
 	"crypto/subtle"
+	"database/sql/driver"
 	"errors"
 	"fmt"
 	"net/http"
@@ -11,9 +12,36 @@ import (
 	"golang.org/x/oauth2"
 )
 
+const (
+	ProviderGithub = "github"
+	ProviderGoogle = "google"
+)
+
+var _ fmt.Stringer = (ID{})
+var _ driver.Valuer = (*ID)(nil)
+
+type ID struct {
+	// Provider is the name of the oauth2 service
+	Provider string
+	// UserID is the id returned by the oauth2 service
+	UserID string
+}
+
+// Value implements driver.Valuer.
+func (i ID) Value() (driver.Value, error) {
+	return i.String(), nil
+}
+
+func NewID(provider, value string) ID {
+	return ID{Provider: provider, UserID: value}
+}
+
+// String implements Stringer
+func (i ID) String() string { return i.Provider + "|" + i.UserID }
+
 type UserInfo struct {
 	// ID is a compound of the auth provider and the associated id
-	ID    string `json:"id"`
+	ID    ID     `json:"id"`
 	Photo string `json:"photo"`
 	Login string `json:"login"`
 	Name  string `json:"name"`

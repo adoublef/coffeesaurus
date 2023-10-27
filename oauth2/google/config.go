@@ -44,7 +44,9 @@ func (p *Config) UserInfo(ctx context.Context, tok *oauth2.Token) (*o2.UserInfo,
 		return nil, fmt.Errorf("decoding json body: %w", err)
 	}
 	u := o2.UserInfo{
-		ID:    fmt.Sprintf("google|%s", v.ID),
+		ID: o2.ID{
+			Provider: o2.ProviderGoogle,
+			UserID:    v.ID},
 		Photo: v.Picture,
 		Login: strings.Split(v.Email, "@")[0],
 		Name:  v.Name,

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	"github.com/adoublef/coffeesaurus/env"
 	o2 "github.com/adoublef/coffeesaurus/oauth2"
@@ -43,7 +44,9 @@ func (p *Config) UserInfo(ctx context.Context, tok *oauth2.Token) (*o2.UserInfo,
 		return nil, fmt.Errorf("decoding json body: %w", err)
 	}
 	u := o2.UserInfo{
-		ID:    fmt.Sprintf("github|%d", v.ID),
+		ID: o2.ID{
+			Provider: o2.ProviderGithub,
+			UserID:    strconv.Itoa(v.ID)},
 		Photo: v.AvatarUrl,
 		Login: v.Login,
 		Name:  v.Name,
