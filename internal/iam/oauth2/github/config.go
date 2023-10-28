@@ -1,18 +1,18 @@
-package google
+package github
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"strings"
+	"strconv"
 
 	"github.com/adoublef/coffeesaurus/env"
-	o2 "github.com/adoublef/coffeesaurus/oauth2"
+	o2 "github.com/adoublef/coffeesaurus/internal/iam/oauth2"
 	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/google"
+	"golang.org/x/oauth2/github"
 )
 
-const api = "https://www.googleapis.com/oauth2/v2/userinfo"
+const api = "https://api.github.com/user"
 
 type Config struct {
 	oauth2.Config
@@ -20,10 +20,10 @@ type Config struct {
 
 // NewConfig will return an OAuth configuration to be used with oauth2.Authenticator
 func NewConfig(opts ...o2.ConfigOption) *Config {
-	c := oauth2.Config{ClientID: env.Must("GOOGLE_CLIENT_ID"),
-		ClientSecret: env.Must("GOOGLE_CLIENT_SECRET"),
-		Endpoint:     google.Endpoint,
-		Scopes:       []string{"openid", "email", "profile"},
+	c := oauth2.Config{ClientID: env.Must("GITHUB_CLIENT_ID"),
+		ClientSecret: env.Must("GITHUB_CLIENT_SECRET"),
+		Endpoint:     github.Endpoint,
+		Scopes:       []string{"openid"},
 	}
 	for _, o := range opts {
 		o(&c)
@@ -45,10 +45,10 @@ func (p *Config) UserInfo(ctx context.Context, tok *oauth2.Token) (*o2.UserInfo,
 	}
 	u := o2.UserInfo{
 		ID: o2.ID{
-			Provider: o2.ProviderGoogle,
-			UserID:    v.ID},
-		Photo: v.Picture,
-		Login: strings.Split(v.Email, "@")[0],
+			Provider: o2.ProviderGithub,
+			UserID:   strconv.Itoa(v.ID)},
+		Photo: v.AvatarUrl,
+		Login: v.Login,
 		Name:  v.Name,
 	}
 	return &u, nil
@@ -56,10 +56,10 @@ func (p *Config) UserInfo(ctx context.Context, tok *oauth2.Token) (*o2.UserInfo,
 
 // User is a provider agnostic representation of a user
 //
-// See (https://github.com/googleapis/google-api-go-client/blob/main/oauth2/v2/oauth2-gen.go).
+// See (https://github.com/google/go-github/blob/master/github/users.go)
 type User struct {
-	ID      string `json:"id"`
-	Email   string `json:"email"`
-	Picture string `json:"picture"`
-	Name    string `json:"name"`
+	ID        int    `json:"id"`
+	Login     string `json:"login"`
+	AvatarUrl string `json:"avatar_url"`
+	Name      string `json:"name"`
 }

@@ -69,15 +69,15 @@ func (a Authenticator) SignIn(w http.ResponseWriter, r *http.Request, cfg Config
 }
 
 // HandleCallback
-func (a Authenticator) HandleCallback(w http.ResponseWriter, r *http.Request, p Config) (sessionId string, u *UserInfo, err error) {
+func (a Authenticator) HandleCallback(w http.ResponseWriter, r *http.Request, p Config) (u *UserInfo, err error) {
 	// get cookie
 	cookie, err := getCookie(r, oauth)
 	if err != nil {
-		return "", nil, err
+		return nil, err
 	}
 	// compare with url of state on request
-	if ok := subtle.ConstantTimeCompare([]byte(cookie.Value), []byte(r.FormValue("state"))) != 0; !ok {
-		return "", nil, errors.New("state value mismatch")
+	if !compare(cookie.Value, r.FormValue("state")) {
+		return nil, errors.New("state value mismatch")
 	}
 	cookie.Value = ""
 	cookie.MaxAge = -1
@@ -88,10 +88,9 @@ func (a Authenticator) HandleCallback(w http.ResponseWriter, r *http.Request, p 
 	// exchange `code` for `tok`
 	tok, err := p.Exchange(ctx, r.FormValue("code"))
 	if err != nil {
-		return "", nil, fmt.Errorf("exchanging for token: %w", err)
+		return nil, fmt.Errorf("exchanging for token: %w", err)
 	}
 	// get `userinfo`
-	sessionId = tok.AccessToken
 	u, err = p.UserInfo(ctx, tok)
 	return
 }
@@ -147,7 +146,10 @@ func getCookie(r *http.Request, name string) (*http.Cookie, error) {
 	return r.Cookie(name)
 }
 
+func compare(a, b string) bool {
+	return subtle.ConstantTimeCompare([]byte(a), []byte(b)) != 0
+}
+
 const (
 	oauth = "oauth-session"
-	site  = "site-session"
 )
