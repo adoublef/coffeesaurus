@@ -9,7 +9,13 @@ import (
 func (s *Service) handleIndex() http.HandlerFunc {
 	region := env.Must("FLY_REGION")
 	return func(w http.ResponseWriter, r *http.Request) {
-		// NOTE static fonts and styles handled by external project
-		t.ExecuteHTTP(w, r, "index", region)
+		if id, err := s.ss.Get(w, r); err != nil {
+			// http.Error
+			w.Write([]byte(region))
+		} else {
+			// NOTE static fonts and styles handled by external project
+			// t.ExecuteHTTP(w, r, "index", map[string]any{"Region":region})
+			w.Write([]byte(id.String()))
+		}
 	}
 }
