@@ -6,4 +6,5 @@
 !litefs
 !nginx
 !sqlite3
+!template
 !go.*
