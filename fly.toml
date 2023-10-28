@@ -3,6 +3,8 @@ primary_region = "lhr"
 
 [build]
 
+# [env] BASE_URL="www.something.com"
+
 [mounts]
   source = "litefs"
   destination = "/data/litefs"
