@@ -39,7 +39,8 @@ WORKDIR /opt
 
 ARG LITEFS_CONFIG="litefs.yml"
 ENV LITEFS_DIR="/litefs"
-ENV DATABASE_URL="file:${LITEFS_DIR}/iam.db"
+ENV DATABASE_URL="${LITEFS_DIR}/iam.db"
+ENV DATABASE_URL_SESSIONS="${LITEFS_DIR}/session.db"
 ENV INTERNAL_PORT=8080
 ENV PORT=8081
 
@@ -53,5 +54,16 @@ RUN apk add --no-cache bash fuse3 sqlite ca-certificates curl
 COPY --from=flyio/litefs:0.5 /usr/local/bin/litefs /usr/local/bin/litefs
 ADD litefs/${LITEFS_CONFIG} /etc/litefs.yml
 RUN mkdir -p /data ${LITEFS_DIR}
+
+FROM deploy AS staging
+
+# prepare for infisical
+RUN curl -1sLf \
+    'https://dl.cloudsmith.io/public/infisical/infisical-cli/setup.alpine.sh' | bash \
+    && apk add infisical
+
+ENTRYPOINT ["litefs", "mount"]
+
+FROM deploy AS final
 
 ENTRYPOINT ["litefs", "mount"]

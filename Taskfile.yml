@@ -21,9 +21,14 @@ tasks:
     desc: Start service
     deps:
       - stop
-      # - cache
+      - cache
     cmds:
       - docker-compose up --build --force-recreate
+
+  test:
+    desc: Testing packages
+    cmds:
+      - go test -v -count 1 {{.CLI_ARGS}}
 
   env:
     desc: Secret management with Infisical

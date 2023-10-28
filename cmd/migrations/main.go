@@ -11,7 +11,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	s3 "github.com/adoublef/coffeesaurus/internal/iam/sqlite3"
+	"github.com/adoublef/coffeesaurus/internal/iam/sessions"
+	iam "github.com/adoublef/coffeesaurus/internal/iam/sqlite3"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -34,7 +35,12 @@ func main() {
 
 func run(ctx context.Context) (err error) {
 	// migrations for `iam` module
-	err = s3.Up(ctx, os.Getenv("DATABASE_URL"))
+	err = iam.Up(ctx, os.Getenv("DATABASE_URL"))
+	if err != nil {
+		return fmt.Errorf("running migration: %w", err)
+	}
+	// migrations for `session` module
+	err = sessions.Up(ctx, os.Getenv("DATABASE_URL_SESSIONS"))
 	if err != nil {
 		return fmt.Errorf("running migration: %w", err)
 	}

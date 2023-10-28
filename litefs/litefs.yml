@@ -11,8 +11,7 @@ proxy:
   addr: ":${INTERNAL_PORT}"
   target: "localhost:${PORT}"
   debug: false
-  # test
-  db: "my.db"
+  db: "${DATABASE_URL}"
   passthrough: 
     - "*.ico"
     - "*.png"

@@ -13,7 +13,7 @@ services:
     container_name: coffeesaurus-primary
     build:
       context: .
-      target: deploy
+      target: staging
       args:
         - LITEFS_CONFIG=litefs.nginx.yml
     privileged: true
@@ -21,8 +21,25 @@ services:
       - ./data:/data
     environment:
       - FLY_REGION=primary
+      - INFISICAL_TOKEN=${INFISICAL_TOKEN}
     ports:
       - 8081:8081
+    networks:
+      - coffeesaurus-network
+
+  replica:
+    container_name: coffeesaurus-replica
+    build:
+      context: .
+      target: staging
+      args:
+        - LITEFS_CONFIG=litefs.nginx.yml
+    privileged: true
+    environment:
+      - FLY_REGION=replica
+      - INFISICAL_TOKEN=${INFISICAL_TOKEN}
+    ports:
+      - 8082:8081
     networks:
       - coffeesaurus-network
 
