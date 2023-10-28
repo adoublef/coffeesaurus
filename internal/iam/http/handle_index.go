@@ -11,11 +11,10 @@ func (s *Service) handleIndex() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if id, err := s.ss.Get(w, r); err != nil {
 			// http.Error
-			w.Write([]byte(region))
+			t.ExecuteHTTP(w, r, "index", region)
 		} else {
-			// NOTE static fonts and styles handled by external project
-			// t.ExecuteHTTP(w, r, "index", map[string]any{"Region":region})
-			w.Write([]byte(id.String()))
+			// get user by id
+			t.ExecuteHTTP(w, r, "profile", id.String())
 		}
 	}
 }

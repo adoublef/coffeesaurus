@@ -27,6 +27,8 @@ func (s *Service) handleCallback() http.HandlerFunc {
 		}
 		u := iam.NewUser(ou.ID, ou.Login, ou.Photo, ou.Name)
 		// check profile exists
+		// don't use `sql` errors inside this module
+		// try to use domain level errors
 		found, err := sqlite3.LookUpProfile(r.Context(), s.db.Raw(), ou.Login)
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
