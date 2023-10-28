@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"log"
 	"net"
@@ -13,9 +12,9 @@ import (
 
 	"github.com/adoublef/coffeesaurus/env"
 	iamHTTP "github.com/adoublef/coffeesaurus/internal/iam/http"
-	"github.com/adoublef/coffeesaurus/internal/iam/sqlite3"
+	"github.com/adoublef/coffeesaurus/internal/iam/sessions"
+	"github.com/adoublef/coffeesaurus/sqlite3"
 	"github.com/go-chi/chi/v5"
-	_ "github.com/mattn/go-sqlite3"
 )
 
 func main() {
@@ -36,20 +35,23 @@ func main() {
 }
 
 func run(ctx context.Context) (err error) {
-	// ping database
-	db, err := sql.Open("sqlite3", os.Getenv("DATABASE_URL"))
+	// sessions
+	ss, err := sessions.New(ctx, env.Must("DATABASE_URL_SESSIONS"))
+	if err != nil {
+		return fmt.Errorf("opening sessions db: %w", err)
+	}
+	defer ss.Close()
+
+	// iam
+	db, err := sqlite3.Open(env.Must("DATABASE_URL"))
 	if err != nil {
 		return fmt.Errorf("opening connection: %w", err)
 	}
 	defer db.Close()
-	err = sqlite3.Ping(ctx, db, "profiles")
-	if err != nil {
-		return err
-	}
 
 	mux := chi.NewMux()
 	{
-		mux.Mount("/", iamHTTP.NewService())
+		mux.Mount("/", iamHTTP.NewService(db, ss))
 	}
 
 	s := &http.Server{
