@@ -1,8 +1,9 @@
 *
 !cmd
 !env
+!http
 !internal
 !litefs
 !nginx
-!oauth2
+!sqlite3
 !go.*
