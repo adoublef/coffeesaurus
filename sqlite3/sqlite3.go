@@ -49,3 +49,7 @@ func Open(dsn string) (*DB, error) {
 
 	return &DB{rwc: rwc, dsn: dsn}, nil
 }
+
+var (
+// TODO errors
+)
