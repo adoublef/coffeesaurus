@@ -4,28 +4,28 @@ import (
 	"embed"
 	"net/http"
 
-	"github.com/adoublef-go/template"
 	"github.com/adoublef/coffeesaurus/internal/iam/oauth2"
 	"github.com/adoublef/coffeesaurus/internal/iam/oauth2/google"
 	"github.com/adoublef/coffeesaurus/internal/iam/sessions"
 	"github.com/adoublef/coffeesaurus/sqlite3"
+	"github.com/adoublef/coffeesaurus/template"
 	"github.com/go-chi/chi/v5"
 )
 
-//go:embed all:*.html
-var fsys embed.FS
-
-// change API to allow any pattern
-var t = template.Must(fsys, template.Partials(false))
+var (
+	//go:embed all:*.html
+	fsys embed.FS
+	t    = template.Must(template.New(fsys))
+)
 
 var _ http.Handler = (*Service)(nil)
 
 type Service struct {
-	m *chi.Mux
-	a *oauth2.Authenticator
+	m  *chi.Mux
+	a  *oauth2.Authenticator
+	db *sqlite3.DB
 	// this should be passed through middleware
 	ss *sessions.Session
-	db *sqlite3.DB
 }
 
 // ServeHTTP implements http.Handler.
@@ -38,6 +38,7 @@ func NewService(db *sqlite3.DB, ss *sessions.Session) *Service {
 		m:  chi.NewMux(),
 		a:  &oauth2.Authenticator{},
 		db: db,
+		// middleware
 		ss: ss,
 	}
 	s.routes()
@@ -46,7 +47,6 @@ func NewService(db *sqlite3.DB, ss *sessions.Session) *Service {
 
 func (s *Service) routes() {
 	baseURL := "http://localhost:8080"
-
 	ggURL := oauth2.RedirectURL(baseURL + "/callback/google")
 	s.a.Configs().Set("google", google.NewConfig(ggURL))
 
