@@ -3,7 +3,6 @@ package sessions_test
 import (
 	"context"
 	"crypto/tls"
-	"database/sql"
 	"embed"
 	"io/fs"
 	"net/http"
@@ -13,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/adoublef/coffeesaurus/internal/iam/sessions"
+	"github.com/adoublef/coffeesaurus/sqlite3"
 	"github.com/maragudk/migrate"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/rs/xid"
@@ -93,24 +93,27 @@ func newTestServer(secure bool) (w *httptest.ResponseRecorder, r *http.Request) 
 }
 
 func withSession(f func(t *testing.T, s *sessions.Session)) func(t *testing.T) {
-	args := strings.Join([]string{"_journal=wal", "_timeout=5000", "_synchronous=normal", "_fk=true"}, "&")
 	return func(t *testing.T) {
 		dsn := path.Join(t.TempDir(), "cache.db")
-		db, err := sql.Open("sqlite3", dsn+"?"+args)
-		if err != nil {
-			t.Fatalf("opening database: %v", err)
-		}
-		t.Cleanup(func() { db.Close() })
+		// run migration
+		{
+			db, err := sqlite3.Open(dsn)
+			if err != nil {
+				t.Fatalf("opening database: %v", err)
+			}
+			t.Cleanup(func() { db.Close() })
 
-		fsys, err := fs.Sub(migrations, "migrations")
-		if err != nil {
-			t.Fatalf("opening directory: %v", err)
+			fsys, err := fs.Sub(migrations, "migrations")
+			if err != nil {
+				t.Fatalf("opening directory: %v", err)
+			}
+			err = migrate.Up(context.TODO(), db.Raw(), fsys)
+			if err != nil {
+				t.Fatalf("execute migrations: %v", err)
+			}
 		}
-		err = migrate.Up(context.TODO(), db, fsys)
-		if err != nil {
-			t.Fatalf("execute migrations: %v", err)
-		}
-		s, err := sessions.New(context.TODO(), "site-session", db)
+		// create session
+		s, err := sessions.New(context.TODO(), dsn)
 		if err != nil {
 			t.Fatalf("execute migrations: %v", err)
 		}
