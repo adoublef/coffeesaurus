@@ -14,3 +14,4 @@ CREATE TABLE credentials (
     FOREIGN KEY (profile) REFERENCES profiles (id),
     PRIMARY KEY (oauth)
 );
+

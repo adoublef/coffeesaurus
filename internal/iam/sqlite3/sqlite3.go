@@ -7,7 +7,8 @@ import (
 	"fmt"
 	"io/fs"
 
-	"github.com/maragudk/migrate"
+	"github.com/adoublef/coffeesaurus/sqlite3"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 var (
@@ -17,7 +18,7 @@ var (
 
 // Up will run through the migration files
 func Up(ctx context.Context, dsn string) (err error) {
-	db, err := sql.Open("sqlite3", dsn)
+	db, err := sqlite3.Open(dsn)
 	if err != nil {
 		return fmt.Errorf("opening connection: %w", err)
 	}
@@ -28,7 +29,7 @@ func Up(ctx context.Context, dsn string) (err error) {
 		return fmt.Errorf("return file system: %w", err)
 	}
 
-	err = migrate.Up(ctx, db, fsys)
+	err = db.Up(ctx, fsys)
 	if err != nil {
 		return fmt.Errorf("run migration files: %w", err)
 	}

@@ -10,8 +10,8 @@ import (
 	"testing"
 
 	"github.com/adoublef/coffeesaurus/internal/iam"
+	"github.com/adoublef/coffeesaurus/internal/iam/oauth2"
 	"github.com/adoublef/coffeesaurus/internal/iam/sqlite3"
-	"github.com/adoublef/coffeesaurus/oauth2"
 	"github.com/maragudk/migrate"
 	_ "github.com/mattn/go-sqlite3"
 	is "github.com/stretchr/testify/require"
