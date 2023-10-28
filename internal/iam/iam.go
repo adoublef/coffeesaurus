@@ -1,7 +1,7 @@
 package iam
 
 import (
-	"github.com/adoublef/coffeesaurus/oauth2"
+	"github.com/adoublef/coffeesaurus/internal/iam/oauth2"
 	"github.com/rs/xid"
 )
 
@@ -9,6 +9,8 @@ type User struct {
 	Profile *Profile  `json:"profile"`
 	OAuth2  oauth2.ID `json:"oauth2"`
 }
+
+func (u User) ID() xid.ID { return u.Profile.ID }
 
 func NewUser(oauthID oauth2.ID, login, photo, name string) *User {
 	u := User{
